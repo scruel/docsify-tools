@@ -21,7 +21,11 @@ function niceName(name: string) {
 
 function buildTree(dirPath: string, name = '', dirLink = ''): Entry {
   let children: Entry[] = [];
-  for (let fileName of fs.readdirSync(dirPath)) {
+  let files = fs.readdirSync(dirPath);
+  files.sort(function(a, b) {
+    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+  }); 
+  for (let fileName of files) {
     if (ignores.test(fileName)) continue;
 
     let fileLink = dirLink + '/' + fileName;
