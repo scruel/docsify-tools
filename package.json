@@ -8,7 +8,7 @@
     "docsify-init": "./bin/docsify-init.js"
   },
   "scripts": {
-    "prepublish": "tsc",
+    "prepare": "tsc",
     "prettier": "prettier --fix"
   },
   "devDependencies": {
