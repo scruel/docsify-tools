@@ -37,3 +37,6 @@ Other dashes will be replaced with spaces
 ## Notes
 
 Don't forget to [setup your repo so that github generates a documentation site](https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages)
+
+## Local Install
+npm install && npm link
