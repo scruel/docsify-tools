@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yargs from 'yargs';
 
-let ignores = /node_modules|^\.|_sidebar|_docsify/;
+let ignores = /node_modules|^\.|_sidebar|_navbar|_docsify/;
 let isDoc = /.md$/;
 
 type Entry = {
@@ -37,9 +37,11 @@ function buildTree(dirPath: string, name = '', dirLink = ''): Entry {
   return { name, children, link: dirLink };
 }
 
-function renderToMd(tree: Entry, linkDir = false): string {
+function renderToMd(tree: Entry, linkDir = false, first = false): string {
   if (!tree.children) {
-    return `- [${niceName(path.basename(tree.name, '.md'))}](${tree.link.replace(/ /g, '%20')})`;
+    let link = tree.link.replace(/ /g, '%20')
+    link = path.join(path.dirname(link), path.basename(link, '.md')).replace(/\\/g, '/')
+    return `- [${niceName(path.basename(tree.name, '.md'))}](${link})`;
   } else {
     let fileNames = new Set(tree.children.filter(c => !c.children).map(c => c.name));
     let dirNames = new Set(tree.children.filter(c => c.children).map(c => c.name + '.md'));
@@ -49,15 +51,17 @@ function renderToMd(tree: Entry, linkDir = false): string {
       .map(c => renderToMd(c, dirNames.has(c.name + '.md') && fileNames.has(c.name + '.md')))
       .join('\n')
       .split('\n')
-      .map(item => '  ' + item)
+      .map(item => first ? item : '  ' + item)
       .join('\n');
     let prefix = '';
     if (tree.name) {
       if (linkDir || fileNames.has('README.md')) {
         let linkPath = tree.link.replace(/ /g, '%20');
-        if (fileNames.has('README.md')) linkPath += '/README.md';
+        if (fileNames.has('README.md')) linkPath += '/';
         prefix = `- [${niceName(path.basename(tree.name, '.md'))}](${linkPath})\n`;
-      } else prefix = `- ${niceName(tree.name)}\n`;
+      } else {
+        prefix = `- ${niceName(tree.name)}\n`
+      };
     }
 
     return prefix + content;
@@ -79,7 +83,7 @@ let dir = path.resolve(process.cwd(), args.docsDir || './docs');
 
 try {
   let root = buildTree(dir);
-  fs.writeFileSync(path.join(dir, '_sidebar.md'), renderToMd(root));
+  fs.writeFileSync(path.join(dir, '_sidebar.md'), renderToMd(root, false, true));
 } catch (e) {
   console.error('Unable to generate sidebar for directory', dir);
   console.error('Reason:', e.message);
